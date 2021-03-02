@@ -2,6 +2,7 @@
 #include "SceneNode.hpp"
 #include "Aircraft.hpp"
 #include "SpriteNode.h"
+#include "Command.hpp"
 #include "CommandQueue.hpp"
 class World 
 {
