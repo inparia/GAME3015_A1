@@ -26,7 +26,7 @@ void Player::handleEvent(CommandQueue& commands)
 }
 void Player::handleRealtimeInput(CommandQueue& commands)
 {
-	const float playerSpeed = 30.f;
+	const float playerSpeed = 0.1f;
 	if (GetAsyncKeyState(VK_UP) & 0x8000)
 	{
 		Command moveLeft;

@@ -65,6 +65,7 @@ void Game::OnResize()
 void Game::Update(const GameTimer& gt)
 {
 	OnKeyboardInput(gt);
+	processInput();
 	mWorld.update(gt);
 	//UpdateCamera(gt);
 

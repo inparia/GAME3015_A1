@@ -1,6 +1,2 @@
-﻿  Game.cpp
-C:\Users\inpar\Documents\GAME3015_A1\GAME3015_A1\Game.cpp(24,24): warning C4305: 'argument': truncation from 'double' to 'float'
-C:\Users\inpar\Documents\GAME3015_A1\GAME3015_A1\Game.cpp(493,67): warning C4305: 'argument': truncation from 'double' to 'float'
-  Player.cpp
-  Generating Code...
+﻿  Player.cpp
   GAME3015_A1.vcxproj -> C:\Users\inpar\Documents\GAME3015_A1\x64\Debug\GAME3015_A1.exe
