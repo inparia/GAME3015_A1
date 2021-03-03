@@ -27,42 +27,52 @@ void Player::handleEvent(CommandQueue& commands)
 void Player::handleRealtimeInput(CommandQueue& commands)
 {
 	const float playerSpeed = 30.f;
+	float tempX = 0, tempZ = 0;
+
+
 	if (GetAsyncKeyState(VK_LEFT) & 0x8000)
 	{
 		Command moveLeft;
+		tempX = -playerSpeed;
 		moveLeft.category = Category::PlayerAircraft;
 		moveLeft.action = derivedAction<Aircraft>(
-			AircraftMover(-playerSpeed, 0.f, 0.f));
+			AircraftMover(tempX, 0.f, tempZ));
 		commands.push(moveLeft);
 	}
 
-	else if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
+	if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
 	{
 		Command moveRight;
+		tempX = playerSpeed;
 		moveRight.category = Category::PlayerAircraft;
 		moveRight.action = derivedAction<Aircraft>(
-			AircraftMover(playerSpeed, 0.f, 0.f));
+			AircraftMover(tempX, 0.f, tempZ));
 		commands.push(moveRight);
 	}
 
-	else if (GetAsyncKeyState(VK_UP) & 0x8000)
+
+	if (GetAsyncKeyState(VK_UP) & 0x8000)
 	{
 		Command moveUp;
+		tempZ = playerSpeed;
 		moveUp.category = Category::PlayerAircraft;
 		moveUp.action = derivedAction<Aircraft>(
-			AircraftMover(0.f, 0.f, playerSpeed));
+			AircraftMover(tempX, 0.f, tempZ));
 		commands.push(moveUp);
 	}
 
-	else if (GetAsyncKeyState(VK_DOWN) & 0x8000)
+	if (GetAsyncKeyState(VK_DOWN) & 0x8000)
 	{
 		Command moveDown;
+		tempZ = -playerSpeed;
 		moveDown.category = Category::PlayerAircraft;
 		moveDown.action = derivedAction<Aircraft>(
-			AircraftMover(0.f, 0.f, -playerSpeed));
+			AircraftMover(tempX, 0.f, tempZ));
 		commands.push(moveDown);
 	}
-	else
+
+
+	if(GetAsyncKeyState(VK_UP) == 0 && GetAsyncKeyState(VK_DOWN) == 0 && GetAsyncKeyState(VK_RIGHT) == 0&& GetAsyncKeyState(VK_LEFT) == 0)
 	{
 		Command stopMove;
 		stopMove.category = Category::PlayerAircraft;
