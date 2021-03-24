@@ -2,41 +2,46 @@
 #include "SceneNode.hpp"
 #include "Aircraft.hpp"
 #include "SpriteNode.h"
-#include "Command.hpp"
 #include "CommandQueue.hpp"
-class World 
+#include "Command.hpp"
+
+
+class World
 {
 public:
-	explicit							World(Game* window);
+	explicit							World(Game* game);
 	void								update(const GameTimer& gt);
 	void								draw();
-
 	//void								loadTextures();
 	void								buildScene();
 
 	CommandQueue&						getCommandQueue();
 
+private:
+	CommandQueue						mCommandQueue;
+
+	void								adaptPlayerPosition();
+	void								adaptPlayerVelocity();
+
 
 private:
-	enum Layer
+	enum class Layer
 	{
 		Background,
-		Air,
-		LayerCount
+		Air
 	};
 
 
 private:
-	Game*								mGame;
+	Game* mGame;
 
-	SceneNode*							mSceneGraph;
-	std::array<SceneNode*, LayerCount>	mSceneLayers;
+	SceneNode* mSceneGraph;
+	std::array<SceneNode*, 2>	mSceneLayers;
 
 	XMFLOAT4							mWorldBounds;
 	XMFLOAT2		    				mSpawnPosition;
 	float								mScrollSpeed;
-	Aircraft*							mPlayerAircraft;
-	SpriteNode*							mBackground;
-	Aircraft*							mEnemy;
-	CommandQueue						mCommandQueue;
+	Aircraft* mPlayerAircraft;
+	SpriteNode* mBackground;
+	Aircraft* mEnemy;
 };

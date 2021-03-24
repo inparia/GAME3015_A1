@@ -5,7 +5,6 @@
 #include "../../Common/GeometryGenerator.h"
 #include "../../Common/Camera.h"
 #include "FrameResource.h"
-#include "Command.hpp"
 
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
@@ -40,7 +39,7 @@ struct RenderItem
 	MeshGeometry* Geo = nullptr;
 
 	// Primitive topology.
-	D3D12_PRIMITIVE_TOPOLOGY PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	D3D12_PRIMITIVE_TOPOLOGY PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 	// DrawIndexedInstanced parameters.
 	UINT IndexCount = 0;
@@ -80,8 +79,7 @@ public:
 	void					move(float x, float y, float z);
 
 	void					onCommand(const Command& command, const GameTimer& gt);
-
-	virtual unsigned int			getCategory() const;
+	virtual unsigned int	getCategory() const;
 
 private:
 	virtual void			updateCurrent(const GameTimer& gt);

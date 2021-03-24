@@ -5,6 +5,7 @@ const int gNumFrameResources = 3;
 Game::Game(HINSTANCE hInstance)
 	: D3DApp(hInstance)
 	, mWorld(this)
+	, mPlayer()
 {
 }
 
@@ -12,43 +13,6 @@ Game::~Game()
 {
 	if (md3dDevice != nullptr)
 		FlushCommandQueue();
-}
-
-bool Game::Initialize()
-{
-	if (!D3DApp::Initialize())
-		return false;
-
-
-	mCamera.SetPosition(0, 5, 0);
-	mCamera.Pitch(3.14 / 2);
-
-	// Reset the command list to prep for initialization commands.
-	ThrowIfFailed(mCommandList->Reset(mDirectCmdListAlloc.Get(), nullptr));
-
-	// Get the increment size of a descriptor in this heap type.  This is hardware specific, 
-	// so we have to query this information.
-	mCbvSrvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-	LoadTextures();
-	BuildRootSignature();
-	BuildDescriptorHeaps();
-	BuildShadersAndInputLayout();
-	BuildShapeGeometry();
-	BuildMaterials();
-	BuildRenderItems();
-	BuildFrameResources();
-	BuildPSOs();
-
-	// Execute the initialization commands.
-	ThrowIfFailed(mCommandList->Close());
-	ID3D12CommandList* cmdsLists[] = { mCommandList.Get() };
-	mCommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
-
-	// Wait until initialization is complete.
-	FlushCommandQueue();
-
-	return true;
 }
 
 void Game::OnResize()
@@ -64,10 +28,10 @@ void Game::OnResize()
 
 void Game::Update(const GameTimer& gt)
 {
-	OnKeyboardInput(gt);
-	processInput();
+	//OnKeyboardInput(gt);
+	ProcessInput();
 	mWorld.update(gt);
-	//UpdateCamera(gt);
+	UpdateCamera(gt);
 
 	// Cycle through the circular frame resource array.
 	mCurrFrameResourceIndex = (mCurrFrameResourceIndex + 1) % gNumFrameResources;
@@ -124,7 +88,7 @@ void Game::Draw(const GameTimer& gt)
 	mCommandList->SetGraphicsRootConstantBufferView(2, passCB->GetGPUVirtualAddress());
 
 	mWorld.draw();
-	DrawRenderItems(mCommandList.Get(), mOpaqueRitems);
+	//DrawRenderItems(mCommandList.Get(), mOpaqueRitems);
 
 	// Indicate a state transition on the resource usage.
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
@@ -174,62 +138,83 @@ void Game::OnMouseMove(WPARAM btnState, int x, int y)
 		mCamera.Pitch(dy);
 		mCamera.RotateY(dx);
 	}
+	else if ((btnState & MK_RBUTTON) != 0)
+	{
+		// Make each pixel correspond to 0.2 unit in the scene.
+		float dx = 0.05f * static_cast<float>(x - mLastMousePos.x);
+		float dy = 0.05f * static_cast<float>(y - mLastMousePos.y);
+
+		//To Do
+		// Update the camera radius based on input.
+		//mRadius += dx - dy;
+
+		// Restrict the radius.
+		//mRadius = MathHelper::Clamp(mRadius, 5.0f, 150.0f);
+	}
+
 	mLastMousePos.x = x;
 	mLastMousePos.y = y;
 }
 
-void Game::OnKeyboardInput(const GameTimer& gt)
+void Game::ProcessInput()
 {
-	const float dt = gt.DeltaTime();
-
-	mCamera.GetLook();
-	float tmin = 0;
-	float buffer = 0.5;
-	XMFLOAT3  oppositef3(-1, -1, -1);
-	XMVECTOR opposite = XMLoadFloat3(&oppositef3);
-
-	if (GetAsyncKeyState('W') & 0x8000)
-	{
-		bool hit = false;
-
-		if (!hit)
-		{
-			mCamera.Walk(10.0f * dt);
-
-		}
-	}
-
-	if (GetAsyncKeyState('S') & 0x8000)
-	{
-		bool hit = false;
-		if (!hit)
-		{
-			mCamera.Walk(-10.0f * dt);
-		}
-
-	}
-	if (GetAsyncKeyState('A') & 0x8000)
-	{
-		bool hit = false;
-		if (!hit)
-		{
-			mCamera.Strafe(-10.0f * dt);
-		}
-
-
-	}
-	if (GetAsyncKeyState('D') & 0x8000)
-	{
-		bool hit = false;
-		if (!hit)
-		{
-			mCamera.Strafe(10.0f * dt);
-		}
-	}
-
-
-	mCamera.UpdateViewMatrix();
+	CommandQueue& commands = mWorld.getCommandQueue();
+	mPlayer.handleEvent(commands);
+	mPlayer.handleRealtimeInput(commands);
 }
+
+//void Game::OnKeyboardInput(const GameTimer& gt)
+//{
+//	const float dt = gt.DeltaTime();
+//
+//	mCamera.GetLook();
+//	float tmin = 0;
+//	float buffer = 0.5;
+//	XMFLOAT3  oppositef3(-1, -1, -1);
+//	XMVECTOR opposite = XMLoadFloat3(&oppositef3);
+//
+//	if (GetAsyncKeyState('W') & 0x8000)
+//	{
+//		bool hit = false;
+//
+//		if (!hit)
+//		{
+//			mCamera.Walk(10.0f * dt);
+//
+//		}
+//	}
+//
+//	if (GetAsyncKeyState('S') & 0x8000)
+//	{
+//		bool hit = false;
+//		if (!hit)
+//		{
+//			mCamera.Walk(-10.0f * dt);
+//		}
+//
+//	}
+//	if (GetAsyncKeyState('A') & 0x8000)
+//	{
+//		bool hit = false;
+//		if (!hit)
+//		{
+//			mCamera.Strafe(-10.0f * dt);
+//		}
+//
+//
+//	}
+//	if (GetAsyncKeyState('D') & 0x8000)
+//	{
+//		bool hit = false;
+//		if (!hit)
+//		{
+//			mCamera.Strafe(10.0f * dt);
+//		}
+//	}
+//
+//
+//	mCamera.UpdateViewMatrix();
+//}
 
 void Game::UpdateCamera(const GameTimer& gt)
 {
@@ -245,7 +230,7 @@ void Game::UpdateCamera(const GameTimer& gt)
 
 	//XMMATRIX view = XMMatrixLookAtLH(pos, target, up);
 	//XMStoreFloat4x4(&mView, view);
-
+	mCamera.UpdateViewMatrix();
 
 }
 
@@ -490,8 +475,8 @@ void Game::BuildShadersAndInputLayout()
 void Game::BuildShapeGeometry()
 {
 	GeometryGenerator geoGen;
-	//GeometryGenerator::MeshData box = geoGen.CreateQuad(-0.5f, 0.5f, 1.0f, 1.0f, 1.0f);
-	GeometryGenerator::MeshData box = geoGen.CreateBox(20, 0.2, 20, 1);
+	//GeometryGenerator::MeshData box = geoGen.CreateQuad(0.0f, 0.0f, 20.0f, 10.0f, 10.0f);
+	GeometryGenerator::MeshData box = geoGen.CreateBox(1, 0, 1, 1);
 	SubmeshGeometry boxSubmesh;
 	boxSubmesh.IndexCount = (UINT)box.Indices32.size();
 	boxSubmesh.StartIndexLocation = 0;
@@ -712,11 +697,3 @@ std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> Game::GetStaticSamplers()
 		linearWrap, linearClamp,
 		anisotropicWrap, anisotropicClamp };
 }
-
-
-void Game::processInput()
-{
-	CommandQueue& commands = mWorld.getCommandQueue();
-	mPlayer.handleRealtimeInput(commands);
-}
-

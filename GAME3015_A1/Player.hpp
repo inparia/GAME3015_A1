@@ -1,32 +1,36 @@
 #pragma once
 #include "Command.hpp"
 #include <map>
+
 class CommandQueue;
 
 class Player
 {
+public:
+	Player();
+	void					handleEvent(CommandQueue& commands);
+	void					handleRealtimeInput(CommandQueue& commands);
 
 	enum Action
 	{
 		MoveLeft,
 		MoveRight,
 		MoveUp,
-		MoveDown
+		MoveDown,
+		ActionCount
 	};
-public:
-	Player();
-	const float defaultSpeed = 30.0f;
-	float playerSpeedX = 0.0f, playerSpeedY = 0.0f;
-	void handleEvent(CommandQueue& commands);
-	void handleRealtimeInput(CommandQueue& commands);
-	void assignKey(Action action, unsigned int vKey);
-	unsigned int getAssignedKey(Action action) const;
+
+	void					assignKey(Action action, char key);
+	char					getAssignedKey(Action action) const;
+
 private:
-	bool isKeyPressed(unsigned int vKey);
-	bool isRealtimeAction(Action action);
-	std::map<int, Action> mKeyBinding;
-	std::map<Action, Command> mActionBinding;
+	void					initializeActions();
+	static bool				isRealtimeAction(Action action);
+
+private:
+	std::map<char, Action>					mKeyBinding;
+	std::map<Action, Command>				mActionBinding;
+	std::map<char, bool>					mKeyFlag;
+
 
 };
-
-

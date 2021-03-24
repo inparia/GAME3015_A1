@@ -6,7 +6,8 @@ class Aircraft :
     public Entity
 {
 public:
-	enum Type
+
+	enum class Type
 	{
 		Eagle,
 		Raptor,
@@ -15,7 +16,8 @@ public:
 
 public:
 	Aircraft(Type type, Game* game);
-	unsigned int getCategory() const;
+	virtual unsigned int getCategory() const;
+
 
 private:
 	virtual void		drawCurrent() const;
@@ -25,4 +27,5 @@ private:
 private:
 	Type				mType;
 	std::string			mSprite;
+	RenderItem* mAircraftRitem;
 };
